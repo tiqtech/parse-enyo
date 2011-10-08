@@ -1,0 +1,10 @@
+{
+	"id": "com.tiqtech.ParseExample",
+	"version":"1.0.0",
+	"vendor":"tiqTech.com",
+	"type":"web",
+	"main":"index.html",
+	"title":"Parse webOS SDK Example",
+	"uiRevision":"2",
+	"icon":"icon.png"
+}
