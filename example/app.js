@@ -2,7 +2,7 @@ enyo.kind({
 	name:"PreferencesService",
 	kind:"extras.AutoPreferencesService",
 	published:{
-		user:"Pqo48EKihq"
+		user:""
 	}
 });
 
@@ -18,8 +18,8 @@ var _Example = {
 	        {kind:"Input", name:"message", flex:1, hint:$L("Tap to enter a message")},
 	        {kind:"Button", name:"send", caption:$L("Send"), disabled:true, onclick:"sendClicked"}
         ]},
-        {kind:"com.parse.RestClient", name:"parse", className:"Message", onSearch:"foundMessages", onAdd:"messageSaved", onError:"parseError", applicationId:"DEfbMPfikZxSAe6oUzI0jooj6qhrHN06vl3Os3GF", masterKey:"wXmmc7v1qsTealOmAREZNQGMbig0KAXmIHRmNEGF"},
-        {kind:"com.parse.RestClient", name:"user", className:"User", onAdd:"userCreated", onError:"userCreateError", applicationId:"DEfbMPfikZxSAe6oUzI0jooj6qhrHN06vl3Os3GF", masterKey:"wXmmc7v1qsTealOmAREZNQGMbig0KAXmIHRmNEGF"},
+        {kind:"com.parse.RestClient", name:"parse", className:"Message", onSearch:"foundMessages", onAdd:"messageSaved", onError:"parseError", applicationId:"", masterKey:""},
+        {kind:"com.parse.RestClient", name:"user", className:"User", onAdd:"userCreated", onError:"userCreateError", applicationId:"", masterKey:""},
         {kind:"PreferencesService", name:"prefs", onLoad:"prefsReady"}
     ],
     constructor:function() {

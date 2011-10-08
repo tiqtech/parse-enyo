@@ -48,7 +48,6 @@ var _Parse = {
     	this[request.__callback](response);
     },
     callFailure:function(source, response, request) {
-    	enyo.log("failure!")
     	this.doError(request);
     },
     add:function(o) {
