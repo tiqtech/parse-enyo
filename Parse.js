@@ -138,5 +138,49 @@ enyo.kind({
             data:args ? enyo.json.stringify(args) : "{}",
             callback:callback
         });
+    },
+    createUser:function(username, password, data, callback) {
+        // remap callback when data is omitted
+        if(enyo.isFunction(data)) {
+            callback = data;
+            data = {};
+        }
+        
+        enyo.mixin(data, {
+            username:username,
+            password:password
+        });
+        
+        this.call({
+            endpoint:"users",
+            method:"POST",
+            event:"doCreateUser",
+            data:enyo.json.stringify(data),
+            callback:callback
+        });
+    },
+    removeUser:function(id, callback) {
+        this.call({
+            endpoint:"users",
+            method:"DELETE",
+            id:id,
+            event:"doRemoveUser",
+            callback:callback
+        });
+    },
+    login:function(username, password, callback) {
+        this.call({
+            endpoint:"login",
+            method:"GET",
+            event:"doLogin",
+            data:{username:username, password:password},
+            callback:callback
+        });
+    },
+    loginHandler:function(sender, event) {
+        // store session key on successful login
+        if(event.response) {
+            this.setSessionToken(event.response.sessionToken);
+        }
     }
 });
