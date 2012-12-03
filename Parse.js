@@ -1,6 +1,32 @@
 enyo.kind({
     name:"Parse.RestClient",
     kind:"Component",
+    statics:{
+        key:"Parse.RestClient.User",
+        user:(function() {
+            if(localStorage) {
+                var s = localStorage.getItem("Parse.RestClient.User");
+                if(s) {
+                    return enyo.json.parse(s);
+                }
+            }
+
+            return ""
+        })(),
+        setUser:function(user, applicationId) {
+            this.user = user;
+            if(localStorage) {
+                if(this.user) {
+                    localStorage.setItem(this.key, enyo.json.stringify(user));    
+                } else {
+                    localStorage.removeItem(this.key);
+                }
+            }
+        },
+        currentUser:function() {
+            return this.user;
+        }
+    },
     published:{
         applicationId:"",
         key:""
@@ -11,44 +37,72 @@ enyo.kind({
         onGet:"",
         onRemove:"",
         onSearch:"",
-        onError:""
+        onError:"",
+        onCreateUser:"",
+        onRemoveUser:"",
+        onLogin:""
+    },
+    handlers:{
+        onLogin:"loginHandler",
+        onCreateUser:"loginHandler"
     },
     parse:{
         host:"api.parse.com",
         version:"1"
     },
+    reservedFields: {__type:1, createdAt:1, updatedAt:1, className:1},
     getUrl:function(id, endpoint, className) {
-        var p = ["https://",this.parse.host,this.parse.version,endpoint,className];
+        var p = ["https:/",this.parse.host,this.parse.version,endpoint];
+
+        if(className) {
+            p.push(className);
+        }
+
         if(id) {
             p.push(id);
         }
         
         return p.join("/");
     },
-    call:function(config) {
+    getAjax:function(config) {
         config = enyo.mixin({
             endpoint:"classes",
             method:"GET"
         }, config);
-        
-        var x = new enyo.Ajax({
+
+        var params = {
             method:config.method,
             url:this.getUrl(config.id, config.endpoint, config.className),
-            cacheBust:false,
-            contentType:"application/json",
+            //cacheBust:true,
+            contentType:"text/plain",
             headers:{
                 "X-Parse-Application-Id":this.applicationId,
                 "X-Parse-REST-API-Key":this.key
             }
-        });
+        };
+
+        if(Parse.RestClient.user) {
+            params.headers["X-Parse-Session-Token"] = Parse.RestClient.user.sessionToken;
+        }
+
+        return new enyo.Ajax(params);
+    },
+    call:function(config) {
+        var x = this.getAjax(config);
         
         x.go(config.data);
         x.error(this, function(sender, response) {
-            this.doError({response:response});
+            var e = {error:"Unknown Error", code:response};
+
+            if(sender.xhrResponse.body) {
+                try {
+                    enyo.mixin(e, enyo.json.parse(sender.xhrResponse.body));
+                } catch(x) {}
+            }
+
+            this.doError(e);
             if(config.callback) {
-                config.callback(sender, {
-                    error:response
-                });
+                config.callback(sender, e);
             }
         });
         
@@ -78,7 +132,16 @@ enyo.kind({
             });
         }
     },
+    clean:function(o) {
+        if(o) {
+            for(var k in this.reservedFields) {
+                delete o[k];
+            }
+        }
+    },
     add:function(className, o, callback) {
+        this.clean(o);
+
         this.call({
             className:className,
             method:"POST",
@@ -97,6 +160,8 @@ enyo.kind({
         });
     },
     update:function(className, o, callback) {
+        this.clean(o);
+
         this.call({
             className:className,
             method:"PUT",
@@ -177,10 +242,16 @@ enyo.kind({
             callback:callback
         });
     },
+    logout:function() {
+        Parse.RestClient.setUser();
+    },
     loginHandler:function(sender, event) {
         // store session key on successful login
         if(event.response) {
-            this.setSessionToken(event.response.sessionToken);
+            Parse.RestClient.setUser(event.response);
         }
+    },
+    currentUser:function() {
+        return Parse.RestClient.currentUser();
     }
 });
