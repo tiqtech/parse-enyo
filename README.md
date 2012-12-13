@@ -18,7 +18,7 @@ Parse provides a fully functional JavaScript SDK but it leverages Backbone and I
         this.$.parse.add("contact", {name:"joe", phone:"123-456-7890", email:"joe@joe.com"}, enyo.bind(this, "joeAdded"));
     },
     joeAdded:function(source, event) {
-        if(event.respose) {
+        if(event.response) {
             this.log("Joe added with id", event.response.objectId);
         } else {
             this.log(event.error);
