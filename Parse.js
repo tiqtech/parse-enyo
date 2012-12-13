@@ -11,7 +11,7 @@ enyo.kind({
                 }
             }
 
-            return ""
+            return "";
         })(),
         setUser:function(user, applicationId) {
             this.user = user;
@@ -40,7 +40,8 @@ enyo.kind({
         onError:"",
         onCreateUser:"",
         onRemoveUser:"",
-        onLogin:""
+        onLogin:"",
+        onBatch:""
     },
     handlers:{
         onLogin:"loginHandler",
@@ -51,8 +52,8 @@ enyo.kind({
         version:"1"
     },
     reservedFields: {__type:1, createdAt:1, updatedAt:1, className:1},
-    getUrl:function(id, endpoint, className) {
-        var p = ["https:/",this.parse.host,this.parse.version,endpoint];
+    getPath:function(endpoint, className, id) {
+        var p = ["",this.parse.version,endpoint];
 
         if(className) {
             p.push(className);
@@ -65,14 +66,9 @@ enyo.kind({
         return p.join("/");
     },
     getAjax:function(config) {
-        config = enyo.mixin({
-            endpoint:"classes",
-            method:"GET"
-        }, config);
-
         var params = {
             method:config.method,
-            url:this.getUrl(config.id, config.endpoint, config.className),
+            url:"https://"+this.parse.host+this.getPath(config.endpoint, config.className, config.id),
             //cacheBust:true,
             contentType:"text/plain",
             headers:{
@@ -88,8 +84,15 @@ enyo.kind({
         return new enyo.Ajax(params);
     },
     call:function(config) {
+        if(this.batchMode) {
+            this.commands.push(config);
+            return;
+        }
+
         var x = this.getAjax(config);
-        
+
+        config.data = (config.data instanceof Object && config.method != "GET") ? enyo.json.stringify(config.data) : config.data;
+
         x.go(config.data);
         x.error(this, function(sender, response) {
             var e = {error:"Unknown Error", code:response};
@@ -105,7 +108,7 @@ enyo.kind({
                 config.callback(sender, e);
             }
         });
-        
+
         if(config.event) {
             x.response(this, function(sender, response) {
                 var stop = false;
@@ -125,7 +128,7 @@ enyo.kind({
                 }
             });
         }
-        
+
         if(config.callback) {
             x.response(function(sender, response) {
                 config.callback(sender, {response:response});
@@ -143,15 +146,17 @@ enyo.kind({
         this.clean(o);
 
         this.call({
+            endpoint:"classes",
             className:className,
             method:"POST",
-            data:enyo.isString(o) ? o : enyo.json.stringify(o),
+            data:o,
             event:"doAdd",
             callback:callback
         });
     },
     get:function(className, id, callback) {
         this.call({
+            endpoint:"classes",
             className:className,
             method:"GET",
             id:id,
@@ -163,10 +168,11 @@ enyo.kind({
         this.clean(o);
 
         this.call({
+            endpoint:"classes",
             className:className,
             method:"PUT",
             id:o.objectId,
-            data:enyo.isString(o) ? o : enyo.json.stringify(o),
+            data:o,
             event:"doUpdate",
             callback:callback
         });
@@ -177,8 +183,9 @@ enyo.kind({
                 query[k] = enyo.json.stringify(query[k]);
             }
         }
-        
+
         this.call({
+            endpoint:"classes",
             className:className,
             method:"GET",
             data:query,
@@ -188,6 +195,7 @@ enyo.kind({
     },
     remove:function(className, id, callback) {
         this.call({
+            endpoint:"classes",
             className:className,
             method:"DELETE",
             id:id,
@@ -195,12 +203,46 @@ enyo.kind({
             callback:callback
         });
     },
+    batch:function(commands, callback) {
+        if(enyo.isArray(commands)) {
+            commands = {requests:commands};
+        }
+
+        this.call({
+            endpoint:"batch",
+            method:"POST",
+            data:commands,
+            event:"doBatch",
+            callback:callback
+        });
+    },
+    batchSession:function(sessionFunction, callback) {
+        this.commands = [];
+        this.batchMode = true;
+
+        sessionFunction(this);
+
+        var requests = [],
+            me = this;
+
+        enyo.forEach(this.commands, function(config) {
+            requests.push({
+                method:config.method,
+                path:me.getPath(config.endpoint, config.className, config.id),
+                body:config.data
+            });
+        });
+
+        this.commands = null;
+        this.batchMode = false;
+        this.batch({requests:requests}, callback);
+    },
     run:function(name, args, callback) {
         this.call({
             endpoint:"functions",
             className:name,
             method:"POST",
-            data:args ? enyo.json.stringify(args) : "{}",
+            data:args || "{}",
             callback:callback
         });
     },
@@ -210,12 +252,12 @@ enyo.kind({
             callback = data;
             data = {};
         }
-        
+
         enyo.mixin(data, {
             username:username,
             password:password
         });
-        
+
         this.call({
             endpoint:"users",
             method:"POST",
@@ -230,6 +272,14 @@ enyo.kind({
             method:"DELETE",
             id:id,
             event:"doRemoveUser",
+            callback:callback
+        });
+    },
+    requestPasswordReset:function(email, callback) {
+        this.call({
+            endpoint:"requestPasswordReset",
+            method:"POST",
+            data:{email:email},
             callback:callback
         });
     },
