@@ -67,10 +67,10 @@ enyo.kind({
     },
     getAjax:function(config) {
         var params = {
-            method:config.method,
+            method:(config.method || "GET").toUpperCase(),
             url:"https://"+this.parse.host+this.getPath(config.endpoint, config.className, config.id),
             //cacheBust:true,
-            contentType:"text/plain",
+            contentType:"application/json",
             headers:{
                 "X-Parse-Application-Id":this.applicationId,
                 "X-Parse-REST-API-Key":this.key
@@ -91,9 +91,13 @@ enyo.kind({
 
         var x = this.getAjax(config);
 
-        config.data = (config.data instanceof Object && config.method != "GET") ? enyo.json.stringify(config.data) : config.data;
+        if(config.method === "POST" || config.method === "PUT") {
+            x.setPostBody(config.data);
+            x.go();
+        } else {
+            x.go(config.data);
+        }
 
-        x.go(config.data);
         x.error(this, function(sender, response) {
             var e = {error:"Unknown Error", code:response};
 
