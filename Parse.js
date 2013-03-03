@@ -64,7 +64,7 @@ enyo.kind({
         return p.join("/");
     },
     getAjax:function(config) {
-        var params = {
+        var params = {s
             method:(config.method || "GET").toUpperCase(),
             url:"https://"+this.parse.host+this.getPath(config.endpoint, config.className, config.id),
             //cacheBust:true,
@@ -75,8 +75,9 @@ enyo.kind({
             }
         };
 
-        if(Parse.RestClient.user) {
-            params.headers["X-Parse-Session-Token"] = Parse.RestClient.user.sessionToken;
+        var user = Parse.RestClient.currentUser(this.applicationId);
+        if(user) {
+            params.headers["X-Parse-Session-Token"] = user.sessionToken;
         }
 
         return new enyo.Ajax(params);
