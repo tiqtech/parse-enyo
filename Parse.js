@@ -3,27 +3,25 @@ enyo.kind({
     kind:"Component",
     statics:{
         key:"Parse.RestClient.User",
-        user:(function() {
-            if(localStorage) {
-                var s = localStorage.getItem("Parse.RestClient.User");
-                if(s) {
-                    return enyo.json.parse(s);
-                }
-            }
-
-            return "";
-        })(),
+        user:null,
         setUser:function(user, applicationId) {
             this.user = user;
             if(localStorage) {
                 if(this.user) {
-                    localStorage.setItem(this.key, enyo.json.stringify(user));    
+                    localStorage.setItem(this.key+"/"+applicationId, enyo.json.stringify(user));    
                 } else {
-                    localStorage.removeItem(this.key);
+                    localStorage.removeItem(this.key+"/"+applicationId);
                 }
             }
         },
-        currentUser:function() {
+        currentUser:function(applicationId) {
+            if(!this.user && localStorage) {
+                var s = localStorage.getItem(this.key+"/"+applicationId);
+                if(s) {
+                    this.user = enyo.json.parse(s);
+                }
+            }
+
             return this.user;
         }
     },
@@ -302,10 +300,10 @@ enyo.kind({
     loginHandler:function(sender, event) {
         // store session key on successful login
         if(event.response) {
-            Parse.RestClient.setUser(event.response);
+            Parse.RestClient.setUser(event.response, this.applicationId);
         }
     },
     currentUser:function() {
-        return Parse.RestClient.currentUser();
+        return Parse.RestClient.currentUser(this.applicationId);
     }
 });
