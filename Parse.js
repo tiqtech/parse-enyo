@@ -64,7 +64,7 @@ enyo.kind({
         return p.join("/");
     },
     getAjax:function(config) {
-        var params = {s
+        var params = {
             method:(config.method || "GET").toUpperCase(),
             url:"https://"+this.parse.host+this.getPath(config.endpoint, config.className, config.id),
             //cacheBust:true,
