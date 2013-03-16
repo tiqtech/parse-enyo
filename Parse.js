@@ -296,7 +296,7 @@ enyo.kind({
         });
     },
     logout:function() {
-        Parse.RestClient.setUser();
+        Parse.RestClient.setUser(null, this.applicationId);
     },
     loginHandler:function(sender, event) {
         // store session key on successful login
