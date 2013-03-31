@@ -42,8 +42,7 @@ enyo.kind({
         onBatch:""
     },
     handlers:{
-        onLogin:"loginHandler",
-        onCreateUser:"loginHandler"
+        onLogin:"loginHandler"
     },
     parse:{
         host:"api.parse.com",
@@ -266,7 +265,7 @@ enyo.kind({
             method:"POST",
             event:"doCreateUser",
             data:enyo.json.stringify(data),
-            callback:callback
+            callback:enyo.bind(this, "registerHandler", callback, data)
         });
     },
     removeUser:function(id, callback) {
@@ -297,6 +296,14 @@ enyo.kind({
     },
     logout:function() {
         Parse.RestClient.setUser(null, this.applicationId);
+    },
+    registerHandler:function(callback, data, sender, event) {
+        // store session key on successful login
+        if(event.response) {
+            Parse.RestClient.setUser(enyo.mixin(data, event.response), this.applicationId);
+        }
+
+        callback(sender, event);
     },
     loginHandler:function(sender, event) {
         // store session key on successful login
