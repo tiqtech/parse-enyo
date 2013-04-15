@@ -27,7 +27,8 @@ enyo.kind({
     },
     published:{
         applicationId:"",
-        key:""
+        key:"",
+        keyType: "js"   // or rest
     },
     events:{
         onAdd:"",
@@ -63,20 +64,44 @@ enyo.kind({
         return p.join("/");
     },
     getAjax:function(config) {
-        var params = {
-            method:(config.method || "GET").toUpperCase(),
-            url:"https://"+this.parse.host+this.getPath(config.endpoint, config.className, config.id),
-            //cacheBust:true,
-            contentType:"application/json",
-            headers:{
-                "X-Parse-Application-Id":this.applicationId,
-                "X-Parse-REST-API-Key":this.key
-            }
-        };
+        var params;
 
-        var user = Parse.RestClient.currentUser(this.applicationId);
-        if(user) {
-            params.headers["X-Parse-Session-Token"] = user.sessionToken;
+        if(this.keyType == "js") {
+
+            var user = Parse.RestClient.currentUser(this.applicationId);
+
+            // map Header attributes into body members and stringify (since we're passing as text/plain)
+            config.data = enyo.json.stringify(enyo.mixin(config.data || {}, {
+                _ApplicationId: this.applicationId,
+                _ClientVersion: "js1.1.13",
+                //_InstallationId: "2dafa3a8-393d-9339-3f96-f2e836b8d1e9"
+                _JavaScriptKey: this.key,
+                _SessionToken: user ? user.sessionToken : ""
+            }));
+
+            params = {
+                method:"POST",
+                url:"https://"+this.parse.host+this.getPath(config.endpoint, config.className, config.id),
+                cacheBust:false,
+                contentType:"text/plain",
+            };
+
+        } else {
+            params = {
+                method:(config.method || "GET").toUpperCase(),
+                url:"https://"+this.parse.host+this.getPath(config.endpoint, config.className, config.id),
+                //cacheBust:true,
+                contentType:"application/json",
+                headers:{
+                    "X-Parse-Application-Id":this.applicationId,
+                    "X-Parse-REST-API-Key":this.key
+                }
+            };
+
+            var user = Parse.RestClient.currentUser(this.applicationId);
+            if(user) {
+                params.headers["X-Parse-Session-Token"] = user.sessionToken;
+            }
         }
 
         return new enyo.Ajax(params);
@@ -244,7 +269,7 @@ enyo.kind({
             endpoint:"functions",
             className:name,
             method:"POST",
-            data:args || "{}",
+            data:args,
             callback:callback
         });
     },
