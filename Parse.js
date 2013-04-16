@@ -70,14 +70,23 @@ enyo.kind({
 
             var user = Parse.RestClient.currentUser(this.applicationId);
 
-            // map Header attributes into body members and stringify (since we're passing as text/plain)
-            config.data = enyo.json.stringify(enyo.mixin(config.data || {}, {
+            // map Header attributes into body members
+            config.data = enyo.mixin(config.data || {}, {
                 _ApplicationId: this.applicationId,
                 _ClientVersion: "js1.1.13",
                 //_InstallationId: "2dafa3a8-393d-9339-3f96-f2e836b8d1e9"
                 _JavaScriptKey: this.key,
                 _SessionToken: user ? user.sessionToken : ""
-            }));
+            });
+
+            // all requests are channeled via POST regardless of method
+            if(config.method !== "POST") {
+                config.data._method = config.method;
+                config.method = "POST";
+            }
+
+            // stringify the data since we're passing as text/plain
+            config.data = enyo.json.stringify(config.data);
 
             params = {
                 method:"POST",
