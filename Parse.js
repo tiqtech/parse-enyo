@@ -289,7 +289,7 @@ enyo.kind({
             endpoint:"users",
             method:"POST",
             event:"doCreateUser",
-            data:enyo.json.stringify(data),
+            data:data,
             callback:enyo.bind(this, "registerHandler", callback, data)
         });
     },
