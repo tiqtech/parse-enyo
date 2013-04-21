@@ -89,7 +89,7 @@ enyo.kind({
             // stringify the data since we're passing as text/plain
             config.data = enyo.json.stringify(config.data);
 
-            params.method = "POST"; = {
+            params = {
                 method:"POST",
                 url:url,
                 cacheBust:false,
