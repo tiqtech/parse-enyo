@@ -65,6 +65,7 @@ enyo.kind({
     },
     getAjax:function(config) {
         var params;
+        var url = "https://"+this.parse.host+this.getPath(config.endpoint, config.className, config.id);
 
         if(this.keyType == "js") {
 
@@ -88,22 +89,26 @@ enyo.kind({
             // stringify the data since we're passing as text/plain
             config.data = enyo.json.stringify(config.data);
 
-            params = {
+            params.method = "POST"; = {
                 method:"POST",
-                url:"https://"+this.parse.host+this.getPath(config.endpoint, config.className, config.id),
+                url:url,
                 cacheBust:false,
                 contentType:"text/plain",
+                headers: {
+                    "cache-control": null
+                }
             };
 
         } else {
             params = {
                 method:(config.method || "GET").toUpperCase(),
-                url:"https://"+this.parse.host+this.getPath(config.endpoint, config.className, config.id),
-                //cacheBust:true,
+                url:url,
+                cacheBust:false,
                 contentType:"application/json",
                 headers:{
                     "X-Parse-Application-Id":this.applicationId,
-                    "X-Parse-REST-API-Key":this.key
+                    "X-Parse-REST-API-Key":this.key,
+                    "cache-control": null
                 }
             };
 
