@@ -13,12 +13,15 @@ enyo.kind({
                     localStorage.removeItem(this.key+"/"+applicationId);
                 }
             }
+
+            enyo.Signals.send("onChangeUser", {user:this.user});
         },
         currentUser:function(applicationId) {
             if(!this.user && localStorage) {
                 var s = localStorage.getItem(this.key+"/"+applicationId);
                 if(s) {
                     this.user = enyo.json.parse(s);
+                    enyo.Signals.send("onChangeUser", {user: this.user});
                 }
             }
 
