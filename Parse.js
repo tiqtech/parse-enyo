@@ -53,7 +53,7 @@ enyo.kind({
         version:"1"
     },
     reservedFields: {__type:1, createdAt:1, updatedAt:1, className:1},
-    getPath:function(endpoint, className, id) {
+    getUrl:function(endpoint, className, id) {
         var p = ["",this.parse.version,endpoint];
 
         if(className) {
@@ -68,7 +68,7 @@ enyo.kind({
     },
     getAjax:function(config) {
         var params;
-        var url = "https://"+this.parse.host+this.getPath(config.endpoint, config.className, config.id);
+        var url = "https://"+this.parse.host+this.getUrl(config.endpoint, config.className, config.id);
 
         if(this.keyType == "js") {
 
@@ -198,7 +198,7 @@ enyo.kind({
             callback:callback
         });
     },
-    get:function(className, id, callback) {
+    retrieve:function(className, id, callback) {
         this.call({
             endpoint:"classes",
             className:className,
