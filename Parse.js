@@ -52,7 +52,7 @@ enyo.kind({
 		host:"api.parse.com",
 		version:"1"
 	},
-	reservedFields: {__type:1, createdAt:1, updatedAt:1, className:1},
+	reservedFields: {__type:1, createdAt:1, updatedAt:1, className:1, sessionToken:1},
 	getUrl:function(endpoint, className, id) {
 		var p = ["",this.parse.version,endpoint];
 
