@@ -222,12 +222,6 @@ enyo.kind({
 		});
 	},
 	search:function(className, query, callback) {
-		for(var k in query) {
-			if(query[k] instanceof Object) {
-				query[k] = enyo.json.stringify(query[k]);
-			}
-		}
-
 		this.call({
 			endpoint:"classes",
 			className:className,
