@@ -5,6 +5,8 @@ enyo.kind({
 		key:"Parse.RestClient.User",
 		user:null,
 		setUser:function(user, applicationId) {
+			var prior = this.user;
+
 			this.user = user;
 			if(localStorage) {
 				if(this.user) {
@@ -14,7 +16,9 @@ enyo.kind({
 				}
 			}
 
-			enyo.Signals.send("onChangeUser", {user:this.user});
+			if(!(prior && this.user && prior.objectId === this.user.objectId)) {
+				enyo.Signals.send("onChangeUser", {user:this.user});
+			}
 		},
 		currentUser:function(applicationId) {
 			if(!this.user && localStorage) {
